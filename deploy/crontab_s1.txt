@@ -1,0 +1,22 @@
+# ThetaEdge S1 — Hetzner Cron Jobs (IST timezone confirmed)
+# ============================================================
+
+# Start S1 at 08:45 IST — gives 15 mins before 09:00 startup
+45 8 * * 1-5 cd /home/algo/ThetaEdge && /usr/bin/python3 S1_straddle/run_s1.py >> S1_straddle/logs/s1_cron.log 2>&1
+
+# Force kill at 15:35 IST — safety net after market close
+35 15 * * 1-5 pkill -f "run_s1.py"; echo "[$(date)] S1 force stopped" >> /home/algo/ThetaEdge/S1_straddle/logs/s1_cron.log
+
+# Post-market data collection at 15:45 IST
+45 15 * * 1-5 cd /home/algo/ThetaEdge && /usr/bin/python3 shared/data_vault.py --collect-today >> S1_straddle/logs/data_vault.log 2>&1
+
+# Weekly VIX integrity check Sunday 8:30 PM
+30 20 * * 0 cd /home/algo/ThetaEdge && /usr/bin/python3 shared/market_data_fetcher.py --check-gaps >> S1_straddle/logs/vix_integrity.log 2>&1
+
+# Weekly holiday sanity check — Sunday 8:00 PM IST
+0 20 * * 0 cd /home/algo/ThetaEdge && /usr/bin/python3 shared/holiday_calendar.py --sanity-check >> S1_straddle/logs/holiday_check.log 2>&1
+
+# ============================================================
+# Monday–Friday (1-5) for trading jobs
+# Sunday (0) for weekly maintenance jobs
+# Timezone: Asia/Kolkata (IST +0530) — set in /etc/timezone

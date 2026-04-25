@@ -1,0 +1,23 @@
+# deploy_thetaedge.ps1
+$server = "root@46.62.141.57"
+$thetaedge_path = "/home/algo/ThetaEdge"
+
+# 1. Sync required files
+scp -r shared S1_straddle requirements.txt $server:$thetaedge_path/
+
+# 2. Install dependencies
+ssh $server "source $thetaedge_path/venv/bin/activate && pip install --upgrade pip && pip install -r $thetaedge_path/requirements.txt"
+
+# 3. Kill any running bot process
+ssh $server "pkill -f run_s1.py"
+
+# 4. Start the bot in background
+ssh $server "cd $thetaedge_path/S1_straddle && nohup python3 run_s1.py > ../logs/manual_start.log 2>&1 &"
+
+# 5. Show last 50 log lines for quick check
+ssh $server "tail -n 50 $thetaedge_path/logs/manual_start.log"
+
+# 5. (Optional) Clean up unwanted files (edit this list as needed)
+# Example: Remove all .pyc files and test scripts
+ssh $server "find $thetaedge_path -name '*.pyc' -delete"
+ssh $server "rm -f $thetaedge_path/test_* $thetaedge_path/*.db $thetaedge_path/scratch/*"

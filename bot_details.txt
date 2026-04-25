@@ -1,0 +1,190 @@
+Smoke Test Analysis — Line by Line
+Output					Status	Comment
+VIX: 12.62 on 2024-04-18		✅	Correct — April 2024 was genuinely low-VIX
+Regime: LOW_VIX_MODE			✅	12.62 < 16.5 → Config B correctly activated
+Entry 09:20, SL 25%, PT 30%		✅	Exactly Config B parameters
+Margin ₹97,500, 1 lot			✅	Correct Config B margin applied
+Spot 22251.15 → ATM 22250		✅	Correct rounding to nearest 50
+CE 22400 (150 OTM), PE 22100 (150 OTM)	✅	Correct 150 OTM Config B strikes
+PE SL hit at 09:32			✅	SL logic firing correctly
+Final PnL: -2.95 pts			✅	Small loss — realistic, not a bug
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Original S1                    →    Upgraded Regime-Adaptive S1
+───────────────────────────────────────────────────
+Entry: 00:00 (broken)          →    09:20 / 09:25 (VIX-dependent)
+SL: 0 points (none)            →    25% / 40% of premium
+Profit Target: none            →    30% / 70% decay
+Strike: ATM fixed              →    150 OTM / 100 OTM
+VIX awareness: none            →    Locks config at 09:15 daily
+Compounding: manual qty        →    Auto calculateLots()
+Regime switching: none         →    Dual-config at VIX 16.5
+Lot size: hardcoded 50         →    Dynamic get_lot_size(date)
+CSV logging: duplicate headers →    Clean append + Exit_Reason
+2024 PF: ~1.22                 →    1.332 (confirmed walk-forward)
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+✅ Perfect — Everything Verified and Confirmed
+The lot size logic is mathematically sound across all boundary dates. The crossover at 2024-11-20 is correctly handled.
+
+Strategy S1 — Final Status Board
+Component				Status
+Entry time (regime-based)		✅ Done
+% SL (25% / 40%)			✅ Done
+Profit target (30% / 70%)		✅ Done
+150 OTM / 100 OTM strikes		✅ Done
+VIX fetch + lock at 09:15		✅ Done
+Regime switching at 16.5		✅ Done
+Auto compounding (calculateLots)	✅ Done
+Dynamic margin per config		✅ Done
+get_lot_size() boundary dates		✅ Verified
+Edge cases (VIX missing, holiday)	✅ Done
+capital_state.json (₹1.2L, 1 lot)	✅ Done
+paperTrading = 1			✅ Done
+Smoke test passed			✅ Passed
+Paper trading ready			🟢 GO
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+The Complete ThetaEdge Daily Timeline (IST) - Cron-t
+
+Time (IST)	Action
+08:45		Cron starts run_s1.py
+09:00		Fetch + save today's VIX → lock regime → Telegram alert
+09:15		Regime locked
+09:20/09:25	Trade entry
+15:30		Positions closed, capital saved, close alert
+15:35		Force kill safety net
+15:45		Data Vault collects today's index + options 1-min data
+15:50		Telegram: Data Vault collection summary
+Sunday 20:00	Holiday sanity check
+Sunday 20:30	VIX integrity gap check
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+What You Have Built — Complete Journey - From the very first conversation to right now:
+
+Phase		What Was Done
+Phase		What Was Done
+Phase 1		Diagnosed broken S1 (no SL, midnight entry, no PT)
+Phase 2		Win rate & profit factor analysis across 8 years
+Phase 3		VIX threshold analysis → confirmed 16.5 breakpoint
+Phase 4		Config A + Config B parameters locked
+Phase 5		regime_config.py built
+Phase 6		2024 Walk-Forward verified (PF 1.332, 9/10 months profit)
+Phase 7		Lot size, capital, edge cases hardened
+Phase 8		Smoke test passed. Deployment checklist cleared
+Phase 9		ThetaEdge project born. Named. Structured
+Phase 10	Shared infrastructure migrated from algo_strike
+Phase 11	Scheduler + holiday calendar + cron built
+Phase 12	Slim prod DB extracted (34GB → 0.3MB)
+
+✅ Now	Fully production-ready. Paper trading Monday.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Create trades_S1 table with this COMPLETE schema:
+
+CREATE TABLE IF NOT EXISTS trades_S1 (
+    -- Identity
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    trade_date        TEXT NOT NULL,          -- "2026-04-28"
+    strategy          TEXT DEFAULT 'S1',      -- future-proof for S2, S3
+
+    -- Regime & Config
+    vix_at_entry      REAL,                   -- 17.53
+    regime_label      TEXT,                   -- "HIGH_VIX_MODE" / "LOW_VIX_MODE"
+    config_sl_pct     REAL,                   -- 40.0 or 25.0
+    config_pt_pct     REAL,                   -- 70.0 or 30.0
+    config_otm        INTEGER,                -- 100 or 150
+
+    -- Market Context
+    nifty_spot        REAL,                   -- 22251.15
+    atm_strike        INTEGER,                -- 22250
+
+    -- CE Leg
+    ce_strike         INTEGER,                -- 22350
+    ce_entry_price    REAL,                   -- 85.50
+    ce_entry_time     TEXT,                   -- "09:25:12"
+    ce_exit_price     REAL,                   -- 42.75
+    ce_exit_time      TEXT,                   -- "13:45:00"
+    ce_sl_level       REAL,                   -- 119.70
+    ce_pt_level       REAL,                   -- 25.65
+    ce_pnl_pts        REAL,                   -- 42.75
+    ce_exit_reason    TEXT,                   -- "PT_HIT" / "SL_HIT" / "TIME_EXIT"
+
+    -- PE Leg
+    pe_strike         INTEGER,                -- 22150
+    pe_entry_price    REAL,                   -- 92.30
+    pe_entry_time     TEXT,                   -- "09:25:12"
+    pe_exit_price     REAL,                   -- 46.15
+    pe_exit_time      TEXT,                   -- "13:45:00"
+    pe_sl_level       REAL,                   -- 129.22
+    pe_pt_level       REAL,                   -- 27.69
+    pe_pnl_pts        REAL,                   -- 46.15
+    pe_exit_reason    TEXT,                   -- "PT_HIT" / "SL_HIT" / "TIME_EXIT"
+
+    -- Combined Result
+    total_premium     REAL,                   -- 177.80 (ce + pe entry)
+    total_pnl_pts     REAL,                   -- 88.90 (combined)
+    total_pnl_rs      REAL,                   -- PnL in rupees (pts × lot_size)
+    lot_size          INTEGER,                -- 75
+    qty               INTEGER,                -- 75 (1 lot)
+    gross_pnl_rs      REAL,                   -- before tax/charges
+    tax_charges_rs    REAL,                   -- brokerage + STT + GST
+    net_pnl_rs        REAL,                   -- after all charges
+
+    -- Capital State
+    capital_before    REAL,                   -- 120000.00
+    capital_after     REAL,                   -- 126690.00
+    lots_traded       INTEGER,                -- 1
+
+    -- Trade Classification
+    trade_result      TEXT,                   -- "WIN" / "LOSS" / "BREAKEVEN"
+    exit_type         TEXT,                   -- "BOTH_PT" / "BOTH_SL" / 
+                                              -- "ONE_SL_ONE_PT" / "TIME_EXIT"
+                                              -- "HOLIDAY_SKIP" / "NO_TRADE"
+
+    -- Paper vs Live
+    paper_trading     INTEGER DEFAULT 1,      -- 1=paper, 0=live
+
+    -- Timestamps
+    created_at        TEXT DEFAULT (datetime('now','localtime'))
+);
+
+-- Indexes for fast querying
+CREATE INDEX IF NOT EXISTS idx_trade_date ON trades_S1(trade_date);
+CREATE INDEX IF NOT EXISTS idx_regime ON trades_S1(regime_label);
+CREATE INDEX IF NOT EXISTS idx_result ON trades_S1(trade_result);
+CREATE INDEX IF NOT EXISTS idx_paper ON trades_S1(paper_trading);
+
+Confirm this schema is implemented in thetaedge_prod.db.
+Also add a db_version table for future migrations:
+
+CREATE TABLE IF NOT EXISTS db_version (
+    version     INTEGER PRIMARY KEY,
+    applied_at  TEXT DEFAULT (datetime('now','localtime')),
+    notes       TEXT
+);
+INSERT OR IGNORE INTO db_version (version, notes) 
+VALUES (1, 'Initial schema - ThetaEdge S1');
+
+-----
+
+Why Each Column Group Matters:
+Column Group	Used For
+Column Group	Used For
+Regime & Config	Analyse Config A vs Config B performance separately
+CE/PE individual legs	Debug which leg caused losses, SL accuracy
+Exit reasons per leg	Know if PT_HIT vs SL_HIT ratio is healthy
+tax_charges_rs	Accurate net ROI calculation (matches your backtest After Tax column)
+capital_before/after	Rebuild complete equity curve from DB alone
+trade_result + exit_type	Win rate and profit factor calculations directly from DB
+paper_trading flag	Query paper vs live trades separately in same table
+db_version	Safe schema upgrades when S2 is added later
+This schema means you can answer any performance question — win rate, regime comparison, best exit type, monthly PnL — with a single SQL query, no CSV needed. 🎯
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+

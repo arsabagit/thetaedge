@@ -1,0 +1,12 @@
+requests
+pandas
+python-dotenv
+pyotp
+websocket-client
+NorenRestApiPy
+math
+json
+sqlite3
+dill
+schedule>=1.2.1
+jugaad-data

@@ -1,0 +1,12 @@
+When to Use Each Prompt:
+
+Prompt File	                When to Use	                    How to Use
+
+00_session_starter.md       Every single session	        Paste first, wait for confirmation, Then give your task
+
+01_fix_bugs.md	            Fixing BUG-001, 002, 003	    Paste after session starter, add "Fix BUG-001, BUG-002, BUG-003" at the bottom
+
+02_add_strategy.md	        Adding S2 or any new strategy   Paste after session starter, describe the new strategy at the bottom
+
+03_review_before_deploy.md	Before going live on Hetzner	Paste after session starter, attach the changed files at the bottom
+
