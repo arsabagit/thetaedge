@@ -14,6 +14,16 @@ import sys
 import os
 import sqlite3
 
+# ─── Auth Startup Validation ────────────────────────────────────────────────
+# initialize_api() validates (or retries) the session established at import time.
+# Exits immediately if auth failed — prevents silent order failures downstream.
+_api = auth.initialize_api()
+if _api is None:
+    print("[CRITICAL] Shoonya authentication failed at startup — exiting")
+    sys.exit(1)
+print("[INFO] Shoonya API authenticated successfully")
+# ────────────────────────────────────────────────────────────────────────────
+
 # ==========================================
 # Strategy S1: Global Trade State
 # ==========================================

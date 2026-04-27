@@ -115,3 +115,19 @@ class ShoonyaAuth:
 _auth_instance = ShoonyaAuth()
 api = _auth_instance.login()
 
+
+def initialize_api():
+    """
+    Call once at strategy startup to validate or re-establish the authenticated
+    session. Returns the api object if authenticated, or None on failure.
+
+    Usage in algo_strike_straddle_s1.py:
+        _api = auth.initialize_api()
+        if _api is None:
+            sys.exit(1)
+    """
+    global api
+    if api is None:
+        api = _auth_instance.login()
+    return api
+
