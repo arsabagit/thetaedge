@@ -1,7 +1,20 @@
 # ThetaEdge — Known Bugs & Fix Tracker
 
-> Last Updated: 2026-04-25
-> Status: 3 bugs identified in code audit. Not yet fixed.
+> Last Updated: 2026-04-27
+> Status: All 3 original bugs FIXED. Auth crash FIXED. Test suite created.
+
+---
+
+## ROOT CAUSE ANALYSIS — 2026-04-27
+
+All bugs found during production deploy week (BUG-001 to BUG-003, auth import
+crash) would have been caught immediately by a test suite.
+
+Test suite created on 2026-04-27. Run before every future deploy:
+```
+pytest tests/ -v
+```
+Expected: 68 tests pass in < 5 seconds.
 
 ---
 
