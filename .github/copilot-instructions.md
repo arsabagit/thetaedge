@@ -131,6 +131,21 @@ SHOONYA_ACCESS_TOKEN=<token>
 
 ---
 
+## Before Every Deploy — Run Tests First
+
+```bash
+pytest tests/ -v
+```
+
+- All 68 tests must pass before any code reaches Hetzner.
+- If a fix causes any test to fail, the fix is not complete.
+- **Never delete or weaken existing tests to make a fix pass — fix the code instead.**
+- `test_time_exit_at_1515_must_be_false` is a permanent regression guard — do not touch it.
+
+Current test count: **68** | Added: 2026-04-27
+
+---
+
 ## When Copilot Suggests a Change — Checklist
 
 Before accepting any Copilot suggestion that touches strategy logic, verify:
@@ -140,3 +155,4 @@ Before accepting any Copilot suggestion that touches strategy logic, verify:
 - [ ] Is the PT check portfolio-level? (`ltp_ce + ltp_pe <= target`, not per-leg)
 - [ ] Does it call `get_lot_size(trade_date)` for quantity? (not hardcoded 75)
 - [ ] Is `PAPER_TRADING` still 1?
+- [ ] Does `pytest tests/ -v` still pass with 0 failures?

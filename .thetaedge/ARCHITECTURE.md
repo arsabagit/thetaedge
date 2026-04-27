@@ -130,6 +130,39 @@ Per leg per trade:
 
 ---
 
+## Auth Lifecycle (added 2026-04-27)
+
+`shared/auth.py` authenticates **at import time** (module level):
+
+```python
+_auth_instance = ShoonyaAuth()
+api = _auth_instance.login()         # runs when any module imports shared.auth
+
+def initialize_api():                 # called once at strategy startup
+    global api
+    if api is None:
+        api = _auth_instance.login()
+    return api
+```
+
+Consequences:
+- If `login()` returns `None`, `algo_strike_straddle_s1.py` hits `sys.exit(1)` immediately.
+- `tests/conftest.py` injects `MagicMock` api before pytest collection — prevents test crashes.
+- Always verify `.env` credentials are present on the server **before** deploying.
+
+---
+
+## NSE Holiday Expiry Fallback (added 2026-04-27)
+
+NIFTY weekly expiry is every Thursday. When Thursday is an NSE holiday:
+- `get_current_expiry()` detects the holiday via `is_trading_day()`
+- Falls back one day to **Wednesday**
+- Example: Week of 2026-04-28 → Thursday May 1 = Maharashtra Day → expiry = **Wednesday April 30**
+
+Always verify the expiry for the upcoming week against `NSE_HOLIDAYS_2026` in `shared/holiday_calendar.py`.
+
+---
+
 ## Database Schema (trades_S1 table)
 
 41 columns per trade record. Key columns:

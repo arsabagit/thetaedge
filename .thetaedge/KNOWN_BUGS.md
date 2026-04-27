@@ -18,6 +18,35 @@ Expected: 68 tests pass in < 5 seconds.
 
 ---
 
+## ARCHITECTURE NOTE — Auth Lifecycle (added 2026-04-27)
+
+- `shared/auth.py` calls `login()` at **import time** (module level).
+- If `login()` returns `None`, `algo_strike_straddle_s1.py` calls `sys.exit(1)` at module level.
+- In test environments, `tests/conftest.py` injects a `MagicMock` api **before collection** to prevent this exit.
+- In production, `PAPER_TRADING=1` protects order placement but does NOT bypass login — ensure `.env` credentials are valid on the server before every deploy.
+- Root cause of 2026-04-27 no-trade: `api` was not exported at module level → `ImportError` in `order_manager.py`.
+
+---
+
+## ARCHITECTURE NOTE — NSE Holiday Expiry Fallback (added 2026-04-27)
+
+- `get_expiry_string()` calls `get_current_expiry()` which returns nearest Thursday.
+- If that Thursday is an NSE holiday, expiry falls back **one day to Wednesday**.
+- Example: 2026-05-01 = Maharashtra Day → expiry for week of 2026-04-28 is **Wednesday 2026-04-30**.
+- Test `test_get_expiry_holiday_thursday` in `tests/test_capital_manager.py` permanently validates this.
+- **Always check the NSE holiday calendar** when testing or running near a Thursday holiday.
+
+---
+
+## REGRESSION GUARD — BUG-003 (added 2026-04-27)
+
+- `test_time_exit_at_1515_must_be_false` in `tests/test_exit_logic.py` permanently prevents reintroduction of the early 15:15 exit bug.
+- This test **must NEVER be deleted or modified**.
+- BUG-003 original form: `dt.minute >= 15` fired at 15:15, 15:20, 15:25 — 15 minutes early.
+- Fixed form: `dt.time() >= datetime.time(15, 30)` — fires exactly at 15:30.
+
+---
+
 ## 🔴 BUG-001 — Scheduler Does Not Launch Strategy [CRITICAL]
 
 | Field              | Detail                          |
