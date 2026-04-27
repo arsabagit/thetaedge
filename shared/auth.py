@@ -107,3 +107,11 @@ class ShoonyaAuth:
                       web_login_error, direct_login_error)
         return None
 
+
+# ─── Module-level authenticated API instance ───────────────────────────────
+# Required by order_manager.py: `from shared.auth import api`
+# Authenticates once at import time. Returns None if login fails (gracefully
+# handled in order_manager.py via try/except fallback to -1.0).
+_auth_instance = ShoonyaAuth()
+api = _auth_instance.login()
+
