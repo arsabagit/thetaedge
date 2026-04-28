@@ -181,7 +181,7 @@ def get_expiry_string(trade_date: date = None) -> str:
         string like "24APR2026"
     """
     expiry_date = get_current_expiry(trade_date)
-    return expiry_date.strftime("%d%b%Y").upper()
+    return expiry_date.strftime("%d%b%y").upper()  # 2-digit year: Shoonya format DDMMMYY e.g. 30APR26
 
 
 def get_monthly_expiry(trade_date: date = None) -> date:

@@ -27,7 +27,8 @@ The following are locked design decisions. Do NOT alter these under any circumst
 3. **Dynamic Expiry via `get_expiry_string()`** — NEVER use today's date as expiry.
    - Always call `get_expiry_string(trade_date)` from `shared/capital_manager.py`
    - Returns nearest Thursday (or Wednesday if Thursday is holiday)
-   - Format: `DDMMMYYYY` uppercase e.g. `01MAY2026`
+   - Format: `DDMMMYY` uppercase **2-digit year** e.g. `01MAY26` — Shoonya NFO symbol format
+   - **NEVER use 4-digit year** (`01MAY2026`) — Shoonya returns `None` / `-1.0` LTP for that symbol
 
 4. **`trade_context` dict** is the canonical trade record passed to `log_trade_s1()`.
    - Do not add new DB columns without updating BOTH `trade_logger.py` schema AND `trade_context`

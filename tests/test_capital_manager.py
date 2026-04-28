@@ -96,16 +96,17 @@ def test_get_expiry_holiday_thursday():
 # ─── get_expiry_string tests ─────────────────────────────────────────────────
 
 def test_expiry_string_format():
-    """Expiry string must be DDMMMYYYY uppercase, e.g. '07MAY2026'."""
+    """Expiry string must be DDMMMYY uppercase (2-digit year), e.g. '07MAY26' — Shoonya format."""
     result = get_expiry_string(datetime.date(2026, 5, 4))
-    assert result == "07MAY2026"
+    assert result == "07MAY26"
     assert result == result.upper(), "Expiry string must be uppercase"
+    assert len(result) == 7, "Format must be DDMMMYY (7 chars), not DDMMMYYYY"
 
 
 def test_expiry_string_monday():
-    """Monday 2026-05-04 → expiry string '07MAY2026' (not '04MAY2026')."""
+    """Monday 2026-05-04 → expiry string '07MAY26' (2-digit year, not today's date)."""
     result = get_expiry_string(datetime.date(2026, 5, 4))
-    assert result == "07MAY2026"
+    assert result == "07MAY26"
 
 
 # ─── calculate_tax_charges tests ─────────────────────────────────────────────

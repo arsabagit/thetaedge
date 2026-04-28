@@ -29,7 +29,7 @@ ThetaEdge is a modular, regime-adaptive NIFTY options trading system. It sells O
                    │                │    ├─ getLTP("NSE", "Nifty 50") → spot price
                    │                │    ├─ Round to nearest 50 → ATM strike
                    │                │    ├─ CE = ATM + otm, PE = ATM - otm
-                   │                │    ├─ get_expiry_string() → symbol expiry
+                   │                │    ├─ get_expiry_string() → symbol expiry (DDMMMYY, e.g. 30APR26)
                    │                │    └─► takeEntry(atmCE, atmPE)
                    │                │
                    │                ├─ takeEntry()
